@@ -1,199 +1,90 @@
-"use client";
+import React, { useEffect, useState } from "react";
 
-import React from "react";
+const Play: React.FC = () => {
+  const [currentTurn, setCurrentTurn] = useState<"X" | "O">("X");
+  const [symbol, setSymbol] = useState<"X" | "O" | null>(null); // your symbol
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  // 3x3 board state, initially empty
+  const [board, setBoard] = useState<string[][]>([
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+  ]);
 
-type Player = "X" | "O";
-type SquareValue = Player | null;
+  useEffect(() => {
+    console.log("herere");
 
-type Move = {
-  index: number;
-  player: Player;
-};
+    const ws = new WebSocket("wss://172.20.10.2:5100");
 
-function calculateWinner(squares: SquareValue[]): {
-  winner: Player | null;
-  line: number[] | null;
-} {
-  const lines = [
-    [0, 1, 2], // rows
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6], // cols
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8], // diagonals
-    [2, 4, 6],
-  ];
-  for (const [a, b, c] of lines) {
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return { winner: squares[a], line: [a, b, c] };
-    }
-  }
-  return { winner: null, line: null };
-}
+    ws.onopen = () => {
+      console.log("Connected to server");
+      ws.send(JSON.stringify({ type: "init_game" })); // tell backend you want to play
+    };
 
-function getStatusText(
-  squares: SquareValue[],
-  xIsNext: boolean,
-  winner: Player | null
-): string {
-  if (winner) return `Winner: ${winner}`;
-  if (squares.every((s) => s !== null)) return "Draw";
-  return `Next player: ${xIsNext ? "X" : "O"}`;
-}
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log("Message from server:", message);
 
-function Play() {
-  // Board state
-  const [squares, setSquares] = React.useState<SquareValue[]>(
-    Array(9).fill(null)
-  );
-  // Track player turn
-  const [xIsNext, setXIsNext] = React.useState<boolean>(true);
-  const [moves, setMoves] = React.useState<Move[]>([]);
-  // Winner state
-  const { winner, line } = React.useMemo(
-    () => calculateWinner(squares),
-    [squares]
-  );
+      if (message.type === "GAME_START") {
+        setBoard(message.board);
+        setSymbol(message.symbol); // assign "X" or "O" to this player
+        setCurrentTurn(message.c); // X always starts
+      }
 
-  const isDraw = !winner && squares.every((s) => s !== null);
-  const status = getStatusText(squares, xIsNext, winner);
+      if (message.type === "UPDATE_BOARD") {
+        message.winner == "X" ? alert("X WINS !") : alert(" O Wins !");
+        setBoard(message.board);
 
-  function handleSquareClick(index: number) {
-    if (winner || squares[index] !== null) return;
-    setSquares((prev) => {
-      const next = prev.slice();
-      const player: Player = xIsNext ? "X" : "O";
-      next[index] = player;
-      return next;
-    });
-    setMoves((prev) => [...prev, { index, player: xIsNext ? "X" : "O" }]);
-    setXIsNext((prev) => !prev);
-  }
+        setCurrentTurn(message.currentTurn);
+      }
 
-  function handleReset() {
-    setSquares(Array(9).fill(null));
-    setXIsNext(true);
-    setMoves([]);
-  }
+      if (message.type === "WAIT") {
+        alert("wait a moment , we'r finding opponent !");
+      }
 
-  function handleUndoLast() {
-    if (moves.length === 0 || winner) {
-      // Allow undo even if there is a winner? We'll allow it for flexibility.
-      if (moves.length === 0) return;
-    }
-    setMoves((prev) => {
-      const next = prev.slice(0, -1);
-      // Rebuild board from remaining moves to keep logic consistent
-      const rebuilt = Array<SquareValue>(9).fill(null);
-      for (const m of next) rebuilt[m.index] = m.player;
-      setSquares(rebuilt);
-      setXIsNext(next.length % 2 === 0); // X starts, so even count => X's turn
-      return next;
-    });
-  }
+      // if (message.type === "OPPONENT_LEFT") {
+      //   alert("Your opponent left the game!");
+      // }
+    };
+
+    ws.onclose = () => {
+      console.log("Disconnected from server");
+    };
+
+    setSocket(ws);
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  // Handle cell click
+  const handleClick = (row: number, col: number) => {
+    if (board[row][col] !== "") return; // ignore if already filled
+    if (currentTurn != symbol) return;
+
+    socket?.send(JSON.stringify({ type: "move", row, col }));
+  };
 
   return (
-    <main className="min-h-svh bg-background text-foreground flex items-center justify-center p-6">
-      <section className="w-full max-w-xl" aria-labelledby="tictactoe-heading">
-        <header className="mb-6">
-          <h1
-            id="tictactoe-heading"
-            className="text-pretty text-2xl font-semibold tracking-tight"
-          >
-            Tic-Tac-Toe
-          </h1>
-          <p className="mt-2 text-sm">{status}</p>
-        </header>
-
-        <div className="grid md:grid-cols-[2fr_1fr] gap-6">
-          {/* Board */}
-          <div>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-800 text-white">
+      <h1 className="text-2xl mb-4">Tic Tac Toe</h1>
+      <div className="grid grid-cols-3 gap-2">
+        {board.map((row, rowIndex) =>
+          row.map((cell, colIndex) => (
             <div
-              role="grid"
-              aria-label="Tic-Tac-Toe board"
-              className="grid grid-cols-3 gap-0 border border-border rounded-md overflow-hidden"
+              key={`${rowIndex}-${colIndex}`}
+              onClick={() => handleClick(rowIndex, colIndex)}
+              className="w-24 h-24 flex items-center justify-center text-4xl bg-gray-700 hover:bg-gray-600 cursor-pointer border border-gray-500"
             >
-              {squares.map((value, i) => {
-                const isWinning = line?.includes(i) ?? false;
-                return (
-                  <button
-                    key={i}
-                    role="gridcell"
-                    aria-label={`Square ${i + 1} ${
-                      value ? `with ${value}` : "empty"
-                    }`}
-                    aria-pressed={Boolean(value)}
-                    onClick={() => handleSquareClick(i)}
-                    className={[
-                      "aspect-square",
-                      "flex items-center justify-center",
-                      "text-3xl font-mono",
-                      "transition-colors",
-                      // borders to create the classic grid (already have outer border)
-                      i % 3 !== 2 ? "border-r border-border" : "",
-                      i < 6 ? "border-b border-border" : "",
-                      // theme: pure black/white via tokens
-                      "bg-background text-foreground",
-                      "hover:bg-foreground hover:text-background",
-                      isWinning ? "outline outline-2 outline-foreground" : "",
-                    ].join(" ")}
-                  >
-                    {value}
-                  </button>
-                );
-              })}
+              {cell}
             </div>
-
-            {/* Controls */}
-            <div className="mt-4 flex items-center gap-3">
-              <button
-                onClick={handleReset}
-                className="px-3 py-2 border border-border rounded-md bg-background text-foreground hover:bg-foreground hover:text-background transition-colors"
-                aria-label="Reset game"
-              >
-                Reset
-              </button>
-              <button
-                onClick={handleUndoLast}
-                className="px-3 py-2 border border-border rounded-md bg-background text-foreground hover:bg-foreground hover:text-background transition-colors disabled:opacity-50"
-                aria-label="Undo last move"
-                disabled={moves.length === 0}
-              >
-                Undo Last
-              </button>
-              <span className="ml-auto text-sm">
-                {winner
-                  ? `Game Over${isDraw ? " (Draw)" : ""}`
-                  : `Turn: ${xIsNext ? "X" : "O"}`}
-              </span>
-            </div>
-          </div>
-
-          {/* Move History (logic array visualization) */}
-          <aside className="border border-border rounded-md p-4 bg-background">
-            <h2 className="text-base font-semibold mb-2">Moves</h2>
-            {moves.length === 0 ? (
-              <p className="text-sm">No moves yet.</p>
-            ) : (
-              <ol className="list-decimal list-inside space-y-1">
-                {moves.map((m, idx) => (
-                  <li key={`${m.player}-${m.index}-${idx}`} className="text-sm">
-                    Move {idx + 1}: {m.player} to square {m.index + 1}
-                  </li>
-                ))}
-              </ol>
-            )}
-            {winner && (
-              <div className="mt-3 text-sm">
-                Winning line: {line?.map((n) => n + 1).join(" – ")}
-              </div>
-            )}
-          </aside>
-        </div>
-      </section>
-    </main>
+          ))
+        )}
+      </div>
+      <p className="mt-4">Current Turn: {currentTurn}</p>
+    </div>
   );
-}
+};
 
 export default Play;

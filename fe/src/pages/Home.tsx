@@ -8,7 +8,7 @@ function Home() {
 
   return (
     <div className="text-white flex justify-center  h-screen  flex-col w-full">
-      {/* <div>{isLogin ? <Login /> : <Register />}</div>
+      <div>{isLogin ? <Login /> : <Register />}</div>
 
       <div className=" ">
         <button
@@ -20,7 +20,7 @@ function Home() {
           {isLogin ? "click here to Register" : " click here to Login"}
         </button>
         <hr className="border-t-2 border-white my-4" />
-      </div> */}
+      </div>
 
       <Play />
     </div>

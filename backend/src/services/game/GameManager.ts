@@ -1,6 +1,7 @@
 import { WebSocket } from "ws";
 import { Game } from "./Game";
 import { INIT_GAME, MOVE } from "./Messages";
+import { log } from "console";
 
 export class GameManager {
 
@@ -32,16 +33,22 @@ export class GameManager {
     private addHandler(userSocket: WebSocket) {
         userSocket.on("message", (data) => {
             const message = JSON.parse(data.toString())
+            console.log("new message recived : ", message);
+
             if (message.type == INIT_GAME) {
                 if (this.pendingUser) {
                     const newGame = new Game(this.pendingUser, userSocket)
                     this.games.push(newGame);
                     this.pendingUser = null;
-                    newGame.player1?.send(JSON.stringify({ type: "GAME_START", board: newGame.board, symbol: "X" }));
-                    newGame.player2?.send(JSON.stringify({ type: "GAME_START", board: newGame.board, symbol: "O" }));
+                    newGame.player1?.send(JSON.stringify({ type: "GAME_START", board: newGame.board, symbol: "X", currentTurn: "X" }));
+                    newGame.player2?.send(JSON.stringify({ type: "GAME_START", board: newGame.board, symbol: "O", currentTurn: "X" }));
+
                 }
                 else {
+
                     this.pendingUser = userSocket
+                    userSocket?.send(JSON.stringify({ type: "WAIT" }));
+
                 }
             }
             else if (message.type == MOVE) {
@@ -51,7 +58,10 @@ export class GameManager {
                 if (!game) return;
 
                 const valid = game.makeMove(row, col);
-                if (!valid) return;
+                if (!valid) {
+                    userSocket.send(JSON.stringify({ msg: "Not  valid move" }))
+                    return;
+                }
 
                 // broadcast updated board
                 [game.player1, game.player2].forEach(player => {
