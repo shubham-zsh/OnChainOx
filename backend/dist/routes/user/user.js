@@ -12,10 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.router = void 0;
 const express_1 = __importDefault(require("express"));
 const schema_1 = require("../../schema");
-const router = express_1.default.Router();
-router.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const console_1 = require("console");
+exports.router = express_1.default.Router();
+exports.router.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+
     try {
         const { email, password, pubKey } = req.body;
         const userExists = yield schema_1.User.findOne({ email });
@@ -31,10 +34,12 @@ router.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function*
         return res.status(200).json({ msg: "created successfully " });
     }
     catch (err) {
+        (0, console_1.log)("error : ", err);
         res.status(404).json({ msg: "somthing went wrong" });
     }
 }));
-router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+
     try {
         const { email, password } = req.body;
         const userExists = yield schema_1.User.findOne({ email });

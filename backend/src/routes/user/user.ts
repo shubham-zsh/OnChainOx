@@ -1,7 +1,8 @@
 import express, { Response, Request } from "express";
 import { User } from "../../schema";
+import { log } from "console";
 
-const router = express.Router();
+export const router = express.Router();
 
 
 router.post("/signup", async (req: Request, res: Response) => {
@@ -24,8 +25,9 @@ router.post("/signup", async (req: Request, res: Response) => {
 
         return res.status(200).json({ msg: "created successfully " });
     }
-    catch(err) {
-        res.status(404).json({ msg: "somthing went wrong"})
+    catch (err) {
+        log("error : ", err)
+        res.status(404).json({ msg: "somthing went wrong" })
     }
 });
 
@@ -41,13 +43,13 @@ router.post("/signin", async (req: Request, res: Response) => {
 
         const matchPass = User.find({ password });
 
-        if(!matchPass) {
-            return res.status(402).json({ msg: "password is wrong"})
+        if (!matchPass) {
+            return res.status(402).json({ msg: "password is wrong" })
         }
 
         return res.status(200).json({ msg: "login successfully " });
     }
-    catch(err) {
-        res.status(404).json({ msg: "somthing went wrong"})
+    catch (err) {
+        res.status(404).json({ msg: "somthing went wrong" })
     }
 });

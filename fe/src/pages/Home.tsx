@@ -22,7 +22,7 @@ function Home() {
         <hr className="border-t-2 border-white my-4" />
       </div>
 
-      <Play />
+      {/* <Play /> */}
     </div>
   );
 }

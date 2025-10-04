@@ -1,6 +1,28 @@
+import axios from "axios";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
+  const [email, setemail] = useState("asd");
+  const navigate = useNavigate();
+  const [password, setPassword] = useState("asd");
+  const onLogin = () => {
+    if (!email || !password) {
+      alert("Please connect to the wallet !");
+    }
+    axios
+      .post("http://localhost:5100/user/signin", {
+        email,
+        password,
+      })
+      .then((res) => {
+        console.log("res is : ", res);
+        navigate("/play");
+      })
+      .catch((err) => {
+        console.log("error is :  ", err);
+      });
+  };
   //   const handleRegister = () => {
   //     navigate("/play");
   //   };
@@ -21,12 +43,7 @@ function Login() {
 
         <div className="p-3 m-3 flex justify-center">
           {" "}
-          <button
-            onClick={() => {
-              //   navigatge("/play");
-            }}
-            className=" bg-red-500 p-2 m-2 rounded-2xl"
-          >
+          <button onClick={onLogin} className=" bg-red-500 p-2 m-2 rounded-2xl">
             Login
           </button>
         </div>

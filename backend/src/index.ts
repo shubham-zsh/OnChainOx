@@ -1,12 +1,17 @@
 import express, { Response, Request } from "express"
+import { router as userRouter } from "./routes/user/user"
 const app = express();
 
-import cors from "cors"
+import cors from "cors";
+app.use(cors())
+app.use(express.json())
+app.use("/user", userRouter)
+
 app.get("/home", (req: Request, res: Response) => {
     res.send("from home")
 })
 
-app.use(cors())
+
 
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
