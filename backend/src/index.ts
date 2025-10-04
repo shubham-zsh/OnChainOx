@@ -7,7 +7,6 @@ app.use(cors())
 app.use(express.json())
 app.use("/user", userRouter)
 
-
 app.get("/home", (req: Request, res: Response) => {
     res.send("from home")
 })

@@ -18,6 +18,7 @@ const schema_1 = require("../../schema");
 const console_1 = require("console");
 exports.router = express_1.default.Router();
 exports.router.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+
     try {
         const { email, password, pubKey } = req.body;
         const userExists = yield schema_1.User.findOne({ email });
@@ -38,6 +39,7 @@ exports.router.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 }));
 exports.router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+
     try {
         const { email, password } = req.body;
         const userExists = yield schema_1.User.findOne({ email });
