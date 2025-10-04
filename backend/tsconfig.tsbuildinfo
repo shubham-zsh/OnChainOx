@@ -1,1 +1,1 @@
-{"root":["./src/index.ts"],"version":"5.8.2"}
+{"root":["./src/index.ts","./src/schema.ts","./src/routes/game/gameroutes.ts","./src/routes/user/user.ts","./src/services/game/game.ts","./src/services/game/gamemanager.ts","./src/services/game/messages.ts"],"version":"5.8.2"}

@@ -1,7 +1,7 @@
 import express, { Response, Request } from "express"
 const app = express();
 
-import cors from "cors";
+import cors from "cors"
 app.get("/home", (req: Request, res: Response) => {
     res.send("from home")
 })
