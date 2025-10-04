@@ -31,4 +31,23 @@ router.post("/signup", async (req: Request, res: Response) => {
 
 router.post("/signin", async (req: Request, res: Response) => {
 
+    try {
+        const { email, password } = req.body;
+        const userExists = await User.findOne({ email });
+
+        if (!userExists) {
+            return res.status(400).json({ msg: "user not found, please register" });
+        };
+
+        const matchPass = User.find({ password });
+
+        if(!matchPass) {
+            return res.status(402).json({ msg: "password is wrong"})
+        }
+
+        return res.status(200).json({ msg: "login successfully " });
+    }
+    catch(err) {
+        res.status(404).json({ msg: "somthing went wrong"})
+    }
 });
