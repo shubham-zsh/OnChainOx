@@ -1,6 +1,6 @@
 import mongoose, { Schema, model } from "mongoose";
 
-const Connection = mongoose.connect("")
+const Connection = mongoose.connect("mongodb://localhost:27017/")
     .then(() => console.log("mongoose connected"))
     .catch((err) => console.log("connection error: ", err));
 
