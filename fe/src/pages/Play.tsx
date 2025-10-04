@@ -14,7 +14,7 @@ const Play: React.FC = () => {
   useEffect(() => {
     console.log("herere");
 
-    const ws = new WebSocket("wss://172.20.10.2:5100");
+    const ws = new WebSocket("ws://172.20.10.2:5100");
 
     ws.onopen = () => {
       console.log("Connected to server");

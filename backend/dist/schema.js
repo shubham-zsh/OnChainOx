@@ -25,7 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = exports.userSchema = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const Connection = mongoose_1.default.connect("")
+const Connection = mongoose_1.default.connect("mongodb+srv://shubham911db:mydbshubham911@cluster0.viasm.mongodb.net/onchainox")
     .then(() => console.log("mongoose connected"))
     .catch((err) => console.log("connection error: ", err));
 exports.userSchema = new mongoose_1.Schema({
